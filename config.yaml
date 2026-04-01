@@ -1,0 +1,17 @@
+data:
+  source: null
+  date_column: "date"
+  demand_column: "demand"
+  generate_synthetic: true
+  n_periods: 8760
+  seed: 42
+
+model:
+  train_size: 0.8
+  use_time_features: true
+
+output:
+  figures_dir: "images"
+  figure_format: "png"
+  figure_dpi: 100
+
