@@ -57,7 +57,7 @@ def main():
     demand_train = demand[:train_size]
     demand_test = demand[train_size:]
     
-            y_pred = np.full(len(demand_test), demand_train.mean())
+    y_pred = np.full(len(demand_test), demand_train.mean())
     
     metrics = calculate_forecast_metrics(demand_test.values, y_pred)
     logging.info(f"\nForecast Metrics:")
