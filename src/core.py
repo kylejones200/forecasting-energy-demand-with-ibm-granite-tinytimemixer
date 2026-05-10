@@ -36,16 +36,17 @@ def calculate_forecast_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict:
         'rmse': np.sqrt(mean_squared_error(y_true, y_pred))
     }
 
-def plot_energy_forecast(actual: np.ndarray, predicted: np.ndarray, title: str, output_path: Path):
+def plot_energy_forecast(actual: np.ndarray, predicted: np.ndarray, title: str, output_path: Path, plot: bool = False):
     """Plot energy demand forecast """
-    fig, ax = plt.subplots(figsize=(10, 6))
+    if plot:
+        fig, ax = plt.subplots(figsize=(10, 6))
     
-    ax.plot(actual, label="Actual Demand", color="#4A90A4", linewidth=1.2)
-    ax.plot(predicted, label="Predicted Demand", color="#D4A574", linewidth=1.2)
-    ax.set_xlabel("Time")
-    ax.set_ylabel("Energy Demand")
-    ax.legend(loc='best')
+        ax.plot(actual, label="Actual Demand", color="#4A90A4", linewidth=1.2)
+        ax.plot(predicted, label="Predicted Demand", color="#D4A574", linewidth=1.2)
+        ax.set_xlabel("Time")
+        ax.set_ylabel("Energy Demand")
+        ax.legend(loc='best')
     
-    plt.savefig(output_path, dpi=100, bbox_inches="tight")
-    plt.close()
+        plt.savefig(output_path, dpi=100, bbox_inches="tight")
+        plt.close()
 

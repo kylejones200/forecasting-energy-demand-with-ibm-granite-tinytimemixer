@@ -52,7 +52,7 @@ def build_input_context(
     return x
 
 
-def main():
+def main(plot: bool = False):
     from tsfm_public.toolkit.get_model import get_model
     from tsfm_public.toolkit.time_series_preprocessor import TimeSeriesPreprocessor
 
@@ -103,57 +103,58 @@ def main():
     start_2024 = pd.Timestamp("2024-01-01")
     y_hist = y.loc[start_2024:end_2024]
 
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(y_hist.index, y_hist.values, color="#888888", lw=1.5)
-    ax.axvline(jan_2025, color="#666666", linestyle="--", lw=1)
-    if len(y_act):
-        ax.plot(y_act.index, y_act.values, color="#444444", lw=1.8)
-    ax.plot(fc.index, fc.values, color="#000000", lw=2.0)
+    if plot:
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.plot(y_hist.index, y_hist.values, color="#888888", lw=1.5)
+        ax.axvline(jan_2025, color="#666666", linestyle="--", lw=1)
+        if len(y_act):
+            ax.plot(y_act.index, y_act.values, color="#444444", lw=1.8)
+        ax.plot(fc.index, fc.values, color="#000000", lw=2.0)
 
-    from matplotlib.ticker import MaxNLocator, StrMethodFormatter
+        from matplotlib.ticker import MaxNLocator, StrMethodFormatter
 
-    ax.yaxis.set_major_locator(MaxNLocator(4))
-    ax.yaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.grid(False)
-    ax.set_xlabel("")
+        ax.yaxis.set_major_locator(MaxNLocator(4))
+        ax.yaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.grid(False)
+        ax.set_xlabel("")
 
-    if len(y_hist):
+        if len(y_hist):
+            ax.annotate(
+                "History (2024)",
+                xy=(y_hist.index[-1], y_hist.values[-1]),
+                xytext=(6, 0),
+                textcoords="offset points",
+                fontsize=9,
+                va="center",
+                ha="left",
+                color="#666666",
+            )
+        if len(y_act):
+            ax.annotate(
+                "Actual (Jan–Aug 2025)",
+                xy=(y_act.index[-1], y_act.values[-1]),
+                xytext=(6, 0),
+                textcoords="offset points",
+                fontsize=9,
+                va="center",
+                ha="left",
+                color="#444444",
+            )
         ax.annotate(
-            "History (2024)",
-            xy=(y_hist.index[-1], y_hist.values[-1]),
+            "Granite TTM",
+            xy=(fc.index[-1], fc.values[-1]),
             xytext=(6, 0),
             textcoords="offset points",
             fontsize=9,
             va="center",
             ha="left",
-            color="#666666",
+            color="#000000",
         )
-    if len(y_act):
-        ax.annotate(
-            "Actual (Jan–Aug 2025)",
-            xy=(y_act.index[-1], y_act.values[-1]),
-            xytext=(6, 0),
-            textcoords="offset points",
-            fontsize=9,
-            va="center",
-            ha="left",
-            color="#444444",
-        )
-    ax.annotate(
-        "Granite TTM",
-        xy=(fc.index[-1], fc.values[-1]),
-        xytext=(6, 0),
-        textcoords="offset points",
-        fontsize=9,
-        va="center",
-        ha="left",
-        color="#000000",
-    )
 
-    ax.set_title("EIA Net Generation — Granite TTM forecast Jan–Aug 2025")
-    save_fig("eia_granite_ttm_last_fold.png")
+        ax.set_title("EIA Net Generation — Granite TTM forecast Jan–Aug 2025")
+        save_fig("eia_granite_ttm_last_fold.png")
 
 
 if __name__ == "__main__":
