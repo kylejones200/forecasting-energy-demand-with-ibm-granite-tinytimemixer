@@ -1,37 +1,25 @@
+---
+author: "Kyle Jones"
+date_published: "March 17, 2025"
+date_exported_from_medium: "November 10, 2025"
+canonical_link: "https://medium.com/@kyle-t-jones/forecasting-energy-demand-with-ibm-granite-tinytimemixer-abd16836238a"
+---
+
 # Forecasting Energy Demand with IBM Granite TinyTimeMixer Energy demand forecasting has always been a challenge, especially for
 large-scale grids like ERCOT. With volatile consumption patterns...
 
-::::### Forecasting Energy Demand with IBM Granite TinyTimeMixer 
+### Forecasting Energy Demand with IBM Granite TinyTimeMixer 
 
-Energy demand forecasting has always been a challenge, especially for
-large-scale grids like ERCOT. With volatile consumption patterns,
-changing weather conditions, and economic fluctuations, predicting
-energy needs requires models that are accurate, fast, and adaptable.
-That's where IBM's TinyTimeMixer (TTM) comes in.
+Energy demand forecasting has always been a challenge, especially for large-scale grids like ERCOT. With volatile consumption patterns, changing weather conditions, and economic fluctuations, predicting energy needs requires models that are accurate, fast, and adaptable. That's where IBM's TinyTimeMixer (TTM) comes in.
 
-TTM is a group of compact, pre-trained models for time series
-forecasting. TTM delivers state-of-the-art forecasts with just a
-fraction of the computational load of other LLM for time series models.
-It's built for real-world use --- small enough to run on a laptop but
-powerful enough to outperform traditional models in zero-shot and
-few-shot learning scenarios.
+TTM is a group of compact, pre-trained models for time series forecasting. TTM delivers state-of-the-art forecasts with just a fraction of the computational load of other LLM for time series models. It's built for real-world use --- small enough to run on a laptop but powerful enough to outperform traditional models in zero-shot and few-shot learning scenarios.
 
-I tested Granite TTM on ERCOT's energy demand data. ERCOT (Electric
-Reliability Council of Texas) manages the power grid for most of Texas,
-balancing supply and demand across millions of households and
-businesses. Accurate forecasting here isn't just a convenience --- it's
-critical for grid stability and cost efficiency.
+I tested Granite TTM on ERCOT's energy demand data. ERCOT (Electric Reliability Council of Texas) manages the power grid for most of Texas, balancing supply and demand across millions of households and businesses. Accurate forecasting here isn't just a convenience --- it's critical for grid stability and cost efficiency.
 
 ### Setting Up the Model
-TTM comes in multiple versions. The latest release, TTM r2.1, has been
-trained on an enormous dataset of about a billion time series samples.
-For this experiment, I used the **TTM-512--96** model, meaning it takes
-512 historical data points as input and predicts the next 96.
+TTM comes in multiple versions. The latest release, TTM r2.1, has been trained on an enormous dataset of about a billion time series samples. For this experiment, I used the **TTM-512--96** model, meaning it takes 512 historical data points as input and predicts the next 96.
 
-IBM makes it easy to get started with TTM. A simple call to
-`get_model()` automatically selects the
-right pre-trained version based on the input context length and forecast
-horizon. The setup looks like this:
+IBM makes it easy to get started with TTM. A simple call to `get_model()` automatically selects the right pre-trained version based on the input context length and forecast horizon. The setup looks like this:
 
 ```python
 from tsfm_public.toolkit.get_model import get_model
@@ -42,14 +30,9 @@ forecast_length = 96
 model = get_model(TTM_MODEL_PATH, context_length=context_length, prediction_length=forecast_length)
 ```
 
-The context window (512 in this case) is HUGELY important for the
-forecasting. We are not training a model --- it is already trained. We
-are just using the model for inference.
+The context window (512 in this case) is HUGELY important for the forecasting. We are not training a model --- it is already trained. We are just using the model for inference.
 
-Once the model was ready, I loaded ERCOT's energy demand dataset. This
-dataset contains historical electricity consumption measurements at
-different time intervals. Preprocessing was straightforward, using IBM's
-`TimeSeriesPreprocessor`:
+Once the model was ready, I loaded ERCOT's energy demand dataset. This dataset contains historical electricity consumption measurements at different time intervals. Preprocessing was straightforward, using IBM's `TimeSeriesPreprocessor`:
 
 ```python
 from tsfm_public import TimeSeriesPreprocessor
@@ -69,14 +52,9 @@ tsp = TimeSeriesPreprocessor(
 ```
 
 ### Zero-Shot Forecasting
-One of TTM's biggest advantages is its zero-shot forecasting capability.
-Normally, a forecasting model needs to be trained on a dataset before it
-can make predictions. TTM skips that step entirely. It has already been
-pre-trained on a massive corpus of time series data, allowing it to
-generate meaningful forecasts out of the box.
+One of TTM's biggest advantages is its zero-shot forecasting capability. Normally, a forecasting model needs to be trained on a dataset before it can make predictions. TTM skips that step entirely. It has already been pre-trained on a massive corpus of time series data, allowing it to generate meaningful forecasts out of the box.
 
-Running a zero-shot forecast was as simple as calling
-`zeroshot_eval()`:
+Running a zero-shot forecast was as simple as calling `zeroshot_eval()`:
 
 ``` 
 zeroshot_eval(
@@ -87,21 +65,15 @@ zeroshot_eval(
 )
 ```
 
-Without any training on ERCOT data, TTM produced surprisingly accurate
-predictions. The model's pretraining on diverse time series allowed it
-to generalize well to unseen data.
+Without any training on ERCOT data, TTM produced surprisingly accurate predictions. The model's pretraining on diverse time series allowed it to generalize well to unseen data.
 
 MSE: 0.3628121316432953
 
 
 ### Few-Shot Fine-Tuning
-Zero-shot forecasting is useful, but fine-tuning the model on
-domain-specific data improves accuracy. TTM is designed to learn
-quickly, requiring just 5% of the dataset to achieve performance
-comparable to models trained on the full dataset.
+Zero-shot forecasting is useful, but fine-tuning the model on domain-specific data improves accuracy. TTM is designed to learn quickly, requiring just 5% of the dataset to achieve performance comparable to models trained on the full dataset.
 
-Fine-tuning involved training the model on a small subset of ERCOT's
-energy demand history:
+Fine-tuning involved training the model on a small subset of ERCOT's energy demand history:
 
 ``` 
 fewshot_finetune_eval(
@@ -114,9 +86,7 @@ fewshot_finetune_eval(
 )
 ```
 
-The results were impressive. With minimal training, TTM adapted to
-ERCOT's demand patterns, refining its predictions. The mean squared
-error (MSE) dropped significantly compared to the zero-shot approach.
+The results were impressive. With minimal training, TTM adapted to ERCOT's demand patterns, refining its predictions. The mean squared error (MSE) dropped significantly compared to the zero-shot approach.
 
 MSE: 0.36187952756881714
 
@@ -124,38 +94,23 @@ MSE: 0.36187952756881714
 I ran the same thing with a context window of 1024. The MSE was lower.
 
 
-<figcaption>Lower MSE is better. Longer context window
-is better.</figcaption>
+<figcaption>Lower MSE is better. Longer context window is better.</figcaption>
 
 
-Energy demand forecasting directly impacts operational decisions in
-power generation and distribution. Overestimating demand leads to wasted
-resources and higher costs, while underestimating can cause shortages
-and blackouts. Traditional forecasting models require extensive training
-and computational power, making real-time adaptation difficult.
+Energy demand forecasting directly impacts operational decisions in power generation and distribution. Overestimating demand leads to wasted resources and higher costs, while underestimating can cause shortages and blackouts. Traditional forecasting models require extensive training and computational power, making real-time adaptation difficult.
 
-TTM changes that. It delivers fast, accurate forecasts with minimal
-training, making it ideal for dynamic environments like ERCOT. And
-because it's lightweight, it doesn't need a GPU cluster --- it can run
-on a standard laptop or a single GPU instance.
+TTM changes that. It delivers fast, accurate forecasts with minimal training, making it ideal for dynamic environments like ERCOT. And because it's lightweight, it doesn't need a GPU cluster --- it can run on a standard laptop or a single GPU instance.
 
-IBM Granite TinyTimeMixer proves that smaller models can perform well on
-specialisted tasks. For ERCOT and similar energy grids, TTM offers a
-practical, efficient solution to forecasting challenges.
+IBM Granite TinyTimeMixer proves that smaller models can perform well on specialisted tasks. For ERCOT and similar energy grids, TTM offers a practical, efficient solution to forecasting challenges.
 
-If you're working with time series data and need a lightweight yet
-powerful forecasting model, give TTM a shot. It's open-source, easy to
-use, and surprisingly effective.
+If you're working with time series data and need a lightweight yet powerful forecasting model, give TTM a shot. It's open-source, easy to use, and surprisingly effective.
 
 **Resources:**
 
-- [[IBM Granite TTM
-  Repository](https://github.com/ibm-granite/granite-tsfm)]
-- [[TTM Model on
-  PyPI](https://pypi.org/project/granite-tsfm/)]
-- [[TTM NeurIPS 2024
-  Paper](https://arxiv.org/abs/XXXXXX)]
-::::```python
+- [[IBM Granite TTM Repository](https://github.com/ibm-granite/granite-tsfm)]
+- [[TTM Model on PyPI](https://pypi.org/project/granite-tsfm/)]
+- [[TTM NeurIPS 2024 Paper](https://arxiv.org/abs/XXXXXX)]
+```python
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -273,12 +228,3 @@ def main():
 if __name__ == '__main__':
     main()
 ```
-
-
-::::::::::::By [Kyle Jones](https://medium.com/@kyle-t-jones) on
-[March 17, 2025](https://medium.com/p/abd16836238a).
-
-[Canonical
-link](https://medium.com/@kyle-t-jones/forecasting-energy-demand-with-ibm-granite-tinytimemixer-abd16836238a)
-
-Exported from [Medium](https://medium.com) on November 10, 2025.
