@@ -17,7 +17,7 @@ TTM is a group of compact, pre-trained models for time series forecasting. TTM d
 I tested Granite TTM on ERCOT's energy demand data. ERCOT (Electric Reliability Council of Texas) manages the power grid for most of Texas, balancing supply and demand across millions of households and businesses. Accurate forecasting here isn't just a convenience --- it's critical for grid stability and cost efficiency.
 
 ### Setting Up the Model
-TTM comes in multiple versions. The latest release, TTM r2.1, has been trained on an enormous dataset of about a billion time series samples. For this experiment, I used the **TTM-512--96** model, meaning it takes 512 historical data points as input and predicts the next 96.
+TTM comes in multiple versions. The latest release, TTM r2.1, has been trained on an enormous dataset of about a billion time series samples. For this experiment, I used the TTM-512--96 model, meaning it takes 512 historical data points as input and predicts the next 96.
 
 IBM makes it easy to get started with TTM. A simple call to `get_model()` automatically selects the right pre-trained version based on the input context length and forecast horizon. The setup looks like this:
 
@@ -105,7 +105,7 @@ IBM Granite TinyTimeMixer proves that smaller models can perform well on special
 
 If you're working with time series data and need a lightweight yet powerful forecasting model, give TTM a shot. It's open-source, easy to use, and surprisingly effective.
 
-**Resources:**
+Resources:
 
 - [[IBM Granite TTM Repository](https://github.com/ibm-granite/granite-tsfm)]
 - [[TTM Model on PyPI](https://pypi.org/project/granite-tsfm/)]
