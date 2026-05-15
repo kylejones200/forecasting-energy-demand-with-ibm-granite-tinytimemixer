@@ -3,8 +3,6 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from typing import Tuple
-from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 import matplotlib.pyplot as plt
 import logging

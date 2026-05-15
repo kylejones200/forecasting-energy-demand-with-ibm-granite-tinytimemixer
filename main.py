@@ -24,7 +24,7 @@ def load_config(config_path: Path = None) -> dict:
     if config_path is None:
         config_path = Path(__file__).parent / 'config.yaml'
     
-    with open(config_path, 'r') as f:
+    with open(config_path) as f:
         return yaml.safe_load(f)
 
 def main():
@@ -60,7 +60,7 @@ def main():
     y_pred = np.full(len(demand_test), demand_train.mean())
     
     metrics = calculate_forecast_metrics(demand_test.values, y_pred)
-    logging.info(f"\nForecast Metrics:")
+    logging.info("\nForecast Metrics:")
     logging.info(f"RMSE: {metrics['rmse']:.2f}")
     logging.info(f"MAE: {metrics['mae']:.2f}")
     
