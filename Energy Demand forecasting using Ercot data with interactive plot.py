@@ -1,66 +1,41 @@
 """Generated from Jupyter notebook: Energy Demand forecasting using Ercot data with interactive plot
 
 Magics and shell lines are commented out. Run with a normal Python interpreter."""
-
-
-# --- code cell ---
-
-# ! pip install -q -r requirements.txt  # Jupyter-only
-
-
-# --- code cell ---
-
 import pandas as pd
 import plotly.express as px
 
-
 def main():
-    # %matplotlib inline  # Jupyter-only
-
-
-    # --- code cell ---
-
-    df = pd.read_csv("data/power.csv")
-
-
-    # --- code cell ---
-
+    df = pd.read_csv('data/power.csv')
     df.head()
+    df['Date'] = pd.to_datetime(df['Date'])
+    df.set_index('Date', inplace=True)
 
 
-    # --- code cell ---
+def main() -> None:
+    # --- notebook cell (unparsed) ---
+    # # --- code cell ---
 
-    df["Date"] = pd.to_datetime(df["Date"])
+    #     df["diff"] = df["cum_power"].diff()
 
-    df.set_index("Date", inplace=True)
+    # --- notebook cell (unparsed) ---
+    # # --- code cell ---
 
-
-    # --- duplicate code cell omitted (identical to earlier cell) ---
-
-
-    # --- code cell ---
-
-    df["diff"] = df["cum_power"].diff()
+    #     df["diff"].plot()
 
 
-    # --- duplicate code cell omitted (identical to earlier cell) ---
+    #     # --- code cell ---
+
+    #     df = df.sort_index()
 
 
-    # --- code cell ---
+    #     # --- code cell ---
 
-    df["diff"].plot()
-
-
-    # --- code cell ---
-
-    df = df.sort_index()
+    #     fig = px.line(df, x=df.index, y="diff")
+    #     fig.update_traces(mode="lines")
 
 
-    # --- code cell ---
-
-    fig = px.line(df, x=df.index, y="diff")
-    fig.update_traces(mode="lines")
-
+    # if __name__ == "__main__":
+    #     main()
 
 if __name__ == "__main__":
     main()

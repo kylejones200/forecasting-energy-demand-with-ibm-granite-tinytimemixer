@@ -2,9 +2,6 @@
 
 Magics and shell lines are commented out. Run with a normal Python interpreter."""
 
-
-# --- code cell ---
-
 import matplotlib.pyplot as plt
 import pandas as pd
 from darts import TimeSeries
@@ -14,31 +11,23 @@ from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 
 def main():
-    # Load dataset (download from Kaggle first)
     df = pd.read_csv("continuous dataset.csv")
     df["datetime"] = pd.to_datetime(df["datetime"])
     df = df.set_index("datetime").sort_index()
-
-    # Check hourly frequency and fill gaps
     df = df.asfreq("h")
     df["nat_demand"] = df["nat_demand"].interpolate()
-
     df["hour"] = df.index.hour
     df["dayofweek"] = df.index.dayofweek
     df["month"] = df.index.month
     df["is_weekend"] = (df["dayofweek"] >= 5).astype(int)
-
     train = df.loc[:"2019-12-31"]
     test = df.loc["2020-01-01":]
-
     model = SARIMAX(train["nat_demand"], order=(2, 1, 2), seasonal_order=(1, 1, 1, 24))
     sarima_fit = model.fit()
     forecast_sarima = sarima_fit.forecast(len(test))
-
     mae = mean_absolute_error(test["nat_demand"], forecast_sarima)
     mape = mean_absolute_percentage_error(test["nat_demand"], forecast_sarima) * 100
     print(f"MAE: {mae:.2f}, MAPE: {mape:.2f}%")
-
     plt.figure(figsize=(14, 6))
     plt.plot(train.index, train["nat_demand"], label="Train", color="black")
     plt.plot(test.index, test["nat_demand"], label="Test", color="gray")
@@ -49,61 +38,33 @@ def main():
     plt.title("Short-Term Electric Load Forecasting (SARIMA)")
     plt.savefig("electric_load_forecast.png")
     plt.show()
-
     series = TimeSeries.from_dataframe(df, value_cols="nat_demand")
     train, val = series.split_after("2021-12-31")
-
     model = NBEATSModel(input_chunk_length=48, output_chunk_length=24, n_epochs=50)
     model.fit(train)
     forecast_nbeats = model.predict(len(val))
-
-
-    # --- code cell ---
-
-    # ! pip install darts  # Jupyter-only
-
-
-    # --- code cell ---
-
     import matplotlib.pyplot as plt
     import pandas as pd
     from darts import TimeSeries
     from darts.models import NBEATSModel
     from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
 
-    # --- code cell ---
-
-    # Load dataset
     df = pd.read_csv("continuous dataset.csv")
     df["datetime"] = pd.to_datetime(df["datetime"])
     df = df.set_index("datetime").sort_index()
-
-    # Ensure hourly frequency and fill gaps
     df = df.asfreq("h")
     df["nat_demand"] = df["nat_demand"].interpolate()
-
-    # Convert to Darts TimeSeries
     series = TimeSeries.from_dataframe(df, value_cols="nat_demand")
-
-    # Split data using a pandas.Timestamp
     split_point = pd.Timestamp("2020-01-01")
     train, test = series.split_after(split_point)
-
-    # Fit N-BEATS model
     model = NBEATSModel(
         input_chunk_length=48, output_chunk_length=24, n_epochs=5, random_state=3363
     )
     model.fit(train)
-
-    # Forecast
     forecast_nbeats = model.predict(len(test))
-
-    # Compute error metrics
     mae = mean_absolute_error(test.values(), forecast_nbeats.values())
     mape = mean_absolute_percentage_error(test.values(), forecast_nbeats.values()) * 100
     print(f"MAE: {mae:.2f}, MAPE: {mape:.2f}%")
-
-    # Plot results
     plt.figure(figsize=(14, 6))
     train.plot(label="Train", lw=1, color="black")
     test.plot(label="Test", lw=1, color="gray")
@@ -114,10 +75,6 @@ def main():
     plt.legend()
     plt.savefig("electric_load_forecast_nbeats.png")
     plt.show()
-
-
-    # --- code cell ---
-
     import matplotlib.pyplot as plt
     import pandas as pd
     from darts import TimeSeries
@@ -126,15 +83,10 @@ def main():
     from darts.utils.timeseries_generation import datetime_attribute_timeseries
     from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
 
-    # Load and preprocess data
     df = pd.read_csv("continuous dataset.csv")
     df["datetime"] = pd.to_datetime(df["datetime"])
     df = df.set_index("datetime").asfreq("h").sort_index()
-
-    # Target series
     series = TimeSeries.from_dataframe(df, value_cols="nat_demand")
-
-    # Covariates: weather (past) and calendar (future)
     weather_cols = [
         "T2M_toc",
         "QV2M_toc",
@@ -155,45 +107,29 @@ def main():
         .stack(datetime_attribute_timeseries(df.index, attribute="hour", one_hot=True))
         .stack(TimeSeries.from_dataframe(df, value_cols=["holiday", "school"]))
     )
-
-    # Restrict training to 2019
     train = series["2019-01-01":"2019-12-31"]
     test = series["2020-01-01":]
-
-    # Slice covariates
     past_cov_train = past_cov.slice_intersect(train)
     past_cov_test = past_cov.slice_intersect(test)
     future_cov_train = future_cov.slice_intersect(train)
     future_cov_test = future_cov.slice_intersect(test)
-
-    # Scaling
     scaler_target = Scaler()
     scaler_cov = Scaler()
-
     train_scaled = scaler_target.fit_transform(train)
     test_scaled = scaler_target.transform(test)
     past_cov_scaled = scaler_cov.fit_transform(past_cov)
     future_cov_scaled = scaler_cov.transform(future_cov)
-
     past_cov_train_scaled = past_cov_scaled.slice_intersect(train_scaled)
     future_cov_train_scaled = future_cov_scaled.slice_intersect(train_scaled)
-
-    # N-BEATS model
     model = NBEATSModel(
-        input_chunk_length=168,  # one week
-        output_chunk_length=24,  # one day
-        n_epochs=20,
-        random_state=3363,
+        input_chunk_length=168, output_chunk_length=24, n_epochs=20, random_state=3363
     )
-
     model.fit(
         train_scaled,
         past_covariates=past_cov_train_scaled,
         future_covariates=future_cov_train_scaled,
         verbose=True,
     )
-
-    # Sliding window forecasts
     forecast_scaled = model.historical_forecasts(
         series=train_scaled,
         past_covariates=past_cov_scaled,
@@ -204,16 +140,10 @@ def main():
         retrain=False,
         verbose=True,
     )
-
-    # Inverse transform forecast
     forecast = scaler_target.inverse_transform(forecast_scaled)
-
-    # Evaluate
     mae = mean_absolute_error(test, forecast)
     mape = mean_absolute_percentage_error(test, forecast) * 100
     print(f"MAE: {mae:.2f}, MAPE: {mape:.2f}%")
-
-    # Plot
     plt.figure(figsize=(14, 6))
     train.plot(label="Train", lw=1, color="black")
     test.plot(label="Test", lw=1, color="gray")
@@ -224,10 +154,6 @@ def main():
     plt.legend()
     plt.savefig("electric_load_forecast_nbeats_refined.png")
     plt.show()
-
-
-    # --- code cell ---
-
     import matplotlib.pyplot as plt
     import pandas as pd
     from darts import TimeSeries
@@ -236,18 +162,11 @@ def main():
     from darts.utils.timeseries_generation import datetime_attribute_timeseries
     from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
 
-    # Load and preprocess data
     df = pd.read_csv("continuous dataset.csv")
     df["datetime"] = pd.to_datetime(df["datetime"])
     df = df.set_index("datetime").asfreq("h").sort_index()
-
-    # Ensure time index covers expected range
     print(f"Data covers {df.index.min()} to {df.index.max()}")
-
-    # Target series
     series = TimeSeries.from_dataframe(df, value_cols="nat_demand")
-
-    # Covariates: weather (past) and calendar (future)
     weather_cols = [
         "T2M_toc",
         "QV2M_toc",
@@ -268,41 +187,30 @@ def main():
             series.time_index, attribute="day_of_week", one_hot=True
         )
         .stack(
-            datetime_attribute_timeseries(series.time_index, attribute="hour", one_hot=True)
+            datetime_attribute_timeseries(
+                series.time_index, attribute="hour", one_hot=True
+            )
         )
         .stack(TimeSeries.from_dataframe(df, value_cols=["holiday", "school"]))
     )
-
-    # Use slice with slice_intersect for safe date selection
     train = series.slice(pd.Timestamp("2019-01-01"), pd.Timestamp("2019-12-31"))
     test = series.slice(pd.Timestamp("2020-01-01"), pd.Timestamp("2020-12-31"))
-
-    # Slice covariates
     past_cov_train = past_cov.slice_intersect(train)
     past_cov_test = past_cov.slice_intersect(test)
     future_cov_train = future_cov.slice_intersect(train)
     future_cov_test = future_cov.slice_intersect(test)
-
-    # Scaling
     scaler_target = Scaler()
     scaler_cov = Scaler()
-
     train_scaled = scaler_target.fit_transform(train)
     test_scaled = scaler_target.transform(test)
     past_cov_scaled = scaler_cov.fit_transform(past_cov)
     future_cov_scaled = scaler_cov.fit_transform(future_cov)
-
     past_cov_train_scaled = past_cov_scaled.slice_intersect(train_scaled)
     future_cov_train_scaled = future_cov_scaled.slice_intersect(train_scaled)
-
-    # N-BEATS model
     model = NBEATSModel(
         input_chunk_length=168, output_chunk_length=24, n_epochs=20, random_state=3363
     )
-
     model.fit(train_scaled, past_covariates=past_cov_train_scaled, verbose=True)
-
-    # Sliding window forecasts
     forecast_scaled = model.historical_forecasts(
         series=train_scaled,
         past_covariates=past_cov_scaled,
@@ -313,16 +221,10 @@ def main():
         retrain=False,
         verbose=True,
     )
-
-    # Inverse transform forecast
     forecast = scaler_target.inverse_transform(forecast_scaled)
-
-    # Evaluate
     mae = mean_absolute_error(test, forecast)
     mape = mean_absolute_percentage_error(test, forecast) * 100
     print(f"MAE: {mae:.2f}, MAPE: {mape:.2f}%")
-
-    # Plot
     plt.figure(figsize=(14, 6))
     train.plot(label="Train", lw=1, color="black")
     test.plot(label="Test", lw=1, color="gray")
@@ -333,10 +235,6 @@ def main():
     plt.legend()
     plt.savefig("electric_load_forecast_nbeats_refined.png")
     plt.show()
-
-
-    # --- code cell ---
-
     import matplotlib.pyplot as plt
     import pandas as pd
     from darts import TimeSeries
@@ -344,25 +242,16 @@ def main():
     from darts.metrics import rmse
     from darts.models import RNNModel
 
-    # Load continuous dataset
     df = pd.read_csv("continuous dataset.csv")
     df["datetime"] = pd.to_datetime(df["datetime"])
     df_panama = df[["datetime", "nat_demand"]].rename(
         columns={"datetime": "timestamp", "nat_demand": "Load_MW"}
     )
     df_panama = df_panama.sort_values("timestamp").reset_index(drop=True)
-
-    # Convert to Darts TimeSeries
     series = TimeSeries.from_dataframe(df_panama, "timestamp", "Load_MW")
-
-    # Scale series
     scaler = Scaler()
     series_scaled = scaler.fit_transform(series)
-
-    # Train/validation split (last week as validation)
-    train, val = series_scaled[: -24 * 7], series_scaled[-24 * 7 :]
-
-    # LSTM model
+    train, val = (series_scaled[: -24 * 7], series_scaled[-24 * 7 :])
     model = RNNModel(
         model="LSTM",
         input_chunk_length=168,
@@ -373,15 +262,10 @@ def main():
         dropout=0.1,
         random_state=42,
     )
-
     model.fit(train, verbose=True)
-
-    # Forecast
     pred_scaled = model.predict(len(val))
     pred = scaler.inverse_transform(pred_scaled)
     val_unscaled = scaler.inverse_transform(val)
-
-    # Plot forecast
     plt.figure(figsize=(12, 4))
     series[-24 * 7 :].plot(label="Observed", lw=1, color="gray")
     pred.plot(label="LSTM Forecast", lw=2, color="black")
@@ -389,6 +273,10 @@ def main():
     plt.title(f"Panama LSTM Load Forecast (RMSE: {rmse(val_unscaled, pred):.2f})")
     plt.tight_layout()
     plt.show()
+
+
+def main() -> None:
+    main()
 
 
 if __name__ == "__main__":

@@ -42,3 +42,11 @@ IBM Granite TinyTimeMixer:
 - By default, generates synthetic hourly energy demand data.
 - Full Granite TinyTimeMixer implementation requires additional dependencies.
 - Model performance depends on data quality and temporal patterns.
+
+## Disclaimer
+
+Educational/demo code only. Not financial, safety, or engineering advice. Use at your own risk. Verify results independently before any production or operational use.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
