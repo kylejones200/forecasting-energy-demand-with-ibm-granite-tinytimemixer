@@ -8,21 +8,13 @@ import plotly.express as px
 
 def main() -> None:
     df = pd.read_csv("data/power.csv")
-
     df.head()
-
     df["Date"] = pd.to_datetime(df["Date"])
-
     df.set_index("Date", inplace=True)
-
     df["diff"] = df["cum_power"].diff()
-
     df["diff"].plot()
-
     df = df.sort_index()
-
     fig = px.line(df, x=df.index, y="diff")
-
     fig.update_traces(mode="lines")
 
 

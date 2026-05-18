@@ -23,7 +23,7 @@ logging.basicConfig(
 )
 
 
-def load_config(config_path: Path = None) -> dict:
+def load_config(config_path: Path | None = None) -> dict:
     """Load configuration from YAML file."""
     if config_path is None:
         config_path = Path(__file__).parent / "config.yaml"
@@ -44,7 +44,6 @@ def main():
         "--output-dir", type=Path, default=None, help="Output directory"
     )
     args = parser.parse_args()
-
     config = load_config(args.config)
     output_dir = (
         Path(args.output_dir)
@@ -52,7 +51,6 @@ def main():
         else Path(config["output"]["figures_dir"])
     )
     output_dir.mkdir(exist_ok=True)
-
     if args.data_path and args.data_path.exists():
         df = pd.read_csv(args.data_path)
         df = prepare_energy_data(
@@ -81,21 +79,17 @@ def main():
     train_size = int(len(demand) * config["model"]["train_size"])
     demand_train = demand[:train_size]
     demand_test = demand[train_size:]
-
     y_pred = np.full(len(demand_test), demand_train.mean())
-
     metrics = calculate_forecast_metrics(demand_test.values, y_pred)
     logging.info("\nForecast Metrics:")
     logging.info(f"RMSE: {metrics['rmse']:.2f}")
     logging.info(f"MAE: {metrics['mae']:.2f}")
-
     plot_energy_forecast(
         demand_test.values,
         y_pred,
         "Energy Demand Forecast",
         output_dir / "energy_forecast.png",
     )
-
     logging.info(f"\nAnalysis complete. Figures saved to {output_dir}")
 
 

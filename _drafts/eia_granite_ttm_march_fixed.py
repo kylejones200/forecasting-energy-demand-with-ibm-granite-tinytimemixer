@@ -42,37 +42,26 @@ def load_series(cfg: Config) -> pd.Series:
 
 def main() -> None:
     cfg = Config()
-
     y = load_series(cfg)
-
     end_2024 = pd.Timestamp("2024-12-01")
-
     jan_2025 = pd.Timestamp("2025-01-01")
-
     aug_2025 = pd.Timestamp("2025-08-01")
-
     y_act = y.loc[jan_2025:aug_2025]
-
     model = get_model(
         "ibm-granite/granite-timeseries-ttm-r2",
         context_length=cfg.context_len,
         prediction_length=cfg.horizon,
         freq="W",
     )
-
     if hasattr(model, "prediction_filter_length"):
         model.prediction_filter_length = cfg.horizon
 
     x = build_input_context(y, end_2024, cfg.context_len)
-
     tsp = TimeSeriesPreprocessor(
         freq="W", context_length=cfg.context_len, prediction_length=cfg.horizon
     )
-
     freq_id = tsp.get_frequency_token("W")
-
     freq_token = torch.tensor([freq_id], dtype=torch.long)
-
     with torch.no_grad():
         out = model(x, freq_token=freq_token)
 
@@ -85,15 +74,10 @@ def main() -> None:
             yhat = out
 
     yhat = np.asarray(yhat).reshape(-1)
-
     dates = pd.period_range("2025-01", "2025-08", freq="M").to_timestamp()
-
     fc = pd.Series(yhat[: cfg.horizon], index=dates)
-
     start_2024 = pd.Timestamp("2024-01-01")
-
     y_hist = y.loc[start_2024:end_2024]
-
     if plot:
         fig, ax = plt.subplots(figsize=(10, 5))
         ax.plot(y_hist.index, y_hist.values, color="#888888", lw=1.5)
