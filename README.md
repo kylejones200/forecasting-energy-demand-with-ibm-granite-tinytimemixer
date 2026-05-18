@@ -2,6 +2,14 @@
 
 This project demonstrates energy demand forecasting using IBM Granite TinyTimeMixer.
 
+## Business context
+
+Energy demand forecasting has always been a challenge, especially for large-scale grids like ERCOT. With volatile consumption patterns, changing weather conditions, and economic fluctuations, predicting energy needs requires models that are accurate, fast, and adaptable. That's where IBM's TinyTimeMixer (TTM) comes in.
+
+TTM is a group of compact, pre-trained models for time series forecasting. TTM delivers state-of-the-art forecasts with just a fraction of the computational load of other LLM for time series models. It's built for real-world use --- small enough to run on a laptop but powerful enough to outperform traditional models in zero-shot and few-shot learning scenarios.
+
+I tested Granite TTM on ERCOT's energy demand data. ERCOT (Electric Reliability Council of Texas) manages the power grid for most of Texas, balancing supply and demand across millions of households and businesses. Accurate forecasting here isn't just a convenience --- it's critical for grid stability and cost efficiency.
+
 ## Article
 
 Medium article: [Forecasting Energy Demand with IBM Granite TinyTimeMixer](https://medium.com/@kylejones_47003/forecasting-energy-demand-with-ibm-granite-tinytimemixer-abd16836238a)
